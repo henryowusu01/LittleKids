@@ -7,7 +7,22 @@ $action = $_GET['action'] ?? ($_POST['action'] ?? 'dashboard');
 $successMsg = $errorMsg = '';
 
 // Table configuration
-$tables = ['children' => ['table' => 'tblchildren', 'id' => 'ChildID', 'fields' => ['fullName', 'dob', 'specialNeeds', 'EmergName', 'EmergNum']], 'guardians' => ['table' => 'tblguardians', 'id' => 'guardianID', 'fields' => ['fullName', 'email', 'phoneNum', 'address'], 'hasPassword' => true], 'drivers' => ['table' => 'tbldriver', 'id' => 'driverID', 'fields' => ['fullName', 'email', 'phoneNum', 'LicenseNum', 'vehicleType'], 'hasPassword' => true], 'routes' => ['table' => 'tblroutes', 'id' => 'routeID', 'fields' => ['routeName', 'pickup', 'dropoff', 'routeStatus']]];
+$tables = ['children' => ['table' => 'tblchildren', 
+                           'id' => 'ChildID',
+                           'fields' => ['fullName', 'dob', 'specialNeeds', 'EmergName', 'EmergNum']], 
+                           
+           'guardians' => ['table' => 'tblguardians',
+                           'id' => 'guardianID', 
+                           'fields' => ['fullName', 'email', 'phoneNum', 'address'], 'hasPassword' => true], 
+                           
+            'drivers' => ['table' => 'tbldriver', 
+                                        'id' => 'driverID', 
+                                        'fields' => ['fullName', 'email', 'phoneNum', 'LicenseNum', 'vehicleType'], 'hasPassword' => true], 
+                           
+            'routes' => ['table' => 'tblroutes',
+                          'id' => 'routeID', 
+                          'fields' => ['routeName', 'pickup', 'dropoff', 'routeStatus']]];
+
 
 function getTableConfig($type) {
     global $tables;
@@ -20,10 +35,14 @@ function getCount($table) {
 }
 
 // Handle POST requests
+
+//$sql
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (strpos($action, 'delete_') === 0) {
         $type = str_replace('delete_', '', $action);
         $config = getTableConfig($type);
+
+// Delete record from the table
         if ($config) {
             $sql = "DELETE FROM {$config['table']} WHERE {$config['id']}=?";
             $stmt = $conn->prepare($sql);
@@ -31,9 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $successMsg = $stmt->execute() ? 'Record deleted!' : 'Error: ' . $stmt->error;
             $stmt->close();
         }
+        //
     } elseif (in_array(str_replace('_', '', $action), array_keys($tables))) {
         $type = str_replace('_', '', $action);
         $config = getTableConfig($type);
+
         if ($config) {
             $isInsert = strpos($action, 'add') !== false;
             $id = $_POST[$config['id']] ?? null;
@@ -54,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $values[] = $_POST[$f] ?? null;
                     }
                 }
-                
+        // Preparing SQL statement        
                 if ($isInsert) {
                     $sql = "INSERT INTO {$config['table']} (" . implode(',', $fields) . ") VALUES (" . str_repeat('?,', count($fields)-1) . "?)";
                 } else {
@@ -62,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $values[] = $id;
                 }
                 
+                // Execute the prepared statement
                 $stmt = $conn->prepare($sql);
                 $types = str_repeat('s', count($values)-1) . 'i';
                 $stmt->bind_param($types, ...$values);
@@ -106,14 +128,21 @@ if (isset($_GET['edit_id'], $_GET['edit_table'])) {
 
     <div class="container">
         <aside class="sidebar">
-            <h3>Menu</h3>
+            <h3>Menu</h3> //
             <ul>
-                <?php foreach(['dashboard'=>'Dashboard','children'=>'Children','guardians'=>'Guardians','drivers'=>'Drivers','routes'=>'Routes','incidents'=>'Incidents'] as $a=>$l): ?>
+                <?php foreach(['dashboard'=>'Dashboard',
+                               'children'=>'Children',
+                               'guardians'=>'Guardians',
+                               'drivers'=>'Drivers',
+                               'routes'=>'Routes','
+                               incidents'=>'Incidents'] as $a=>$l): ?>
+                
                 <li><a href="Admin.php?action=<?=$a?>" class="<?=$action==$a?'active':''?>"><?=$l?></a></li>
                 <?php endforeach; ?>
             </ul>
         </aside>
 
+//this is the main content area where the dashboard, forms, and tables will be displayed based on the selected action
         <main class="main-content">
             <?php if ($successMsg): ?><div class="alert success"><?=$successMsg?></div><?php endif; ?>
             <?php if ($errorMsg): ?><div class="alert error"><?=$errorMsg?></div><?php endif; ?>
@@ -127,64 +156,133 @@ if (isset($_GET['edit_id'], $_GET['edit_table'])) {
                 </div>
 
             <?php elseif ($action === 'children'): $cfg = getTableConfig('children'); ?>
+
                 <h2>Manage Children</h2>
                 <div class="btn-group"><button class="btn" onclick="toggleForm()">+ Add Child</button></div>
                 <div id="form-container" class="admin-form-container" style="display:none;">
+
                     <form method="POST" class="admin-form">
                         <input type="hidden" name="action" value="<?=isset($_GET['edit_id'])?'edit_child':'add_child'?>">
                         <?php if(isset($_GET['edit_id'])): ?><input type="hidden" name="childID" value="<?=$_GET['edit_id']?>"><?php endif; ?>
                         <div class="form-row">
-                            <div><label>Full Name:</label><input type="text" name="fullName" required value="<?=$editData['fullName']??''?>"></div>
-                            <div><label>DOB:</label><input type="date" name="dob" required value="<?=$editData['dob']??''?>"></div>
+
+                            <div>
+                                <label>Full Name:</label><input type="text" name="fullName" required value="<?=$editData['fullName']??''?>">
+                            </div>
+
+                            <div>
+                                <label>DOB:</label><input type="date" name="dob" required value="<?=$editData['dob']??''?>">
+                            </div>
                         </div>
+
+                        //form fields for special needs and emergency contact information
                         <div class="form-row">
-                            <div><label>Special Needs:</label><textarea name="specialNeeds"><?=$editData['specialNeeds']??''?></textarea></div>
-                            <div><label>Emergency Contact:</label><input type="text" name="EmergName" required value="<?=$editData['EmergName']??''?>"></div>
+                            <div>
+                                <label>Special Needs:</label><textarea name="specialNeeds"><?=$editData['specialNeeds']??''?></textarea>
+                            </div>
+                            <div>
+                                <label>Emergency Contact:</label><input type="text" name="EmergName" required value="<?=$editData['EmergName']??''?>">
+                            </div>
                         </div>
-                        <div><label>Emergency Phone:</label><input type="tel" name="EmergNum" required value="<?=$editData['EmergNum']??''?>"></div>
+                        <div>
+                            <label>Emergency Phone:</label><input type="tel" name="EmergNum" required value="<?=$editData['EmergNum']??''?>">
+                        </div>
                         <button type="submit" class="btn btn-success">Save</button>
                         <button type="button" class="btn btn-secondary" onclick="toggleForm()">Cancel</button>
                     </form>
                 </div>
-                <table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>DOB</th><th>Needs</th><th>Contact</th><th>Actions</th></tr></thead><tbody>
+                <table class="admin-table"><thead>
+                    <tr><th>ID</th>
+                    <th>Name</th>
+                    <th>DOB</th>
+                    <th>Needs</th>
+                    <th>Contact</th>
+                    <th>Actions</th>
+                </tr></thead><tbody>
+
                     <?php $r = $conn->query("SELECT * FROM {$cfg['table']}"); while($row = $r->fetch_assoc()): ?>
-                    <tr><td><?=$row['ChildID']?></td><td><?=$row['fullName']?></td><td><?=$row['dob']?></td><td><?=$row['specialNeeds']?></td><td><?=$row['EmergName']?> - <?=$row['EmergNum']?></td><td class="actions">
-                        <a href="Admin.php?action=children&edit_id=<?=$row['ChildID']?>&edit_table=children" class="btn">Edit</a>
-                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_child"><input type="hidden" name="id" value="<?=$row['ChildID']?>"><button type="submit" class="btn btn-danger">Delete</button></form>
-                    </td></tr>
+                    <tr>
+                        <td><?=$row['ChildID']?></td>
+                        <td><?=$row['fullName']?></td>
+                        <td><?=$row['dob']?></td>
+                        <td><?=$row['specialNeeds']?></td>
+                        <td><?=$row['EmergName']?> - <?=$row['EmergNum']?></td>
+                        <td class="actions">
+                            <a href="Admin.php?action=children&edit_id=<?=$row['ChildID']?>&edit_table=children" class="btn">Edit</a>
+                            <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_child"><input type="hidden" name="id" value="<?=$row['ChildID']?>"><button type="submit" class="btn btn-danger">Delete</button></form>
+                        </td>
+                    </tr>
+
                     <?php endwhile; ?>
                 </tbody></table>
 
             <?php elseif ($action === 'guardians'): $cfg = getTableConfig('guardians'); ?>
+
                 <h2>Manage Guardians</h2>
                 <div class="btn-group"><button class="btn" onclick="toggleForm()">+ Add Guardian</button></div>
                 <div id="form-container" class="admin-form-container" style="display:none;">
+
                     <form method="POST" class="admin-form">
                         <input type="hidden" name="action" value="<?=isset($_GET['edit_id'])?'edit_guardian':'add_guardian'?>">
                         <?php if(isset($_GET['edit_id'])): ?><input type="hidden" name="guardianID" value="<?=$_GET['edit_id']?>"><?php endif; ?>
-                        <div class="form-row">
-                            <div><label>Full Name:</label><input type="text" name="fullName" required value="<?=$editData['fullName']??''?>"></div>
-                            <div><label>Email:</label><input type="email" name="email" required value="<?=$editData['email']??''?>"></div>
+                       
+                            <div class="form-row">
+                            <div>
+                                <label>Full Name:</label>
+                                <input type="text" name="fullName" required value="<?=$editData['fullName']??''?>">
+                            </div>
+                            <div>
+                                <label>Email:</label>
+                                <input type="email" name="email" required value="<?=$editData['email']??''?>">
+                            </div>
                         </div>
                         <div class="form-row">
-                            <div><label>Phone:</label><input type="tel" name="phoneNum" required value="<?=$editData['phoneNum']??''?>"></div>
-                            <div><label><?=isset($_GET['edit_id'])?'Password (opt)':'Password'?>:</label><input type="password" name="password" <?=!isset($_GET['edit_id'])?'required':''?>></div>
+                            <div>
+                                <label>Phone:</label><input type="tel" name="phoneNum" required value="<?=$editData['phoneNum']??''?>">
+                            </div>
+                            <div>
+                                <label><?=isset($_GET['edit_id'])?'Password (opt)':'Password'?>:</label>
+                                <input type="password" name="password" <?=!isset($_GET['edit_id'])?'required':''?>>
+                             </div>
                         </div>
-                        <div><label>Address:</label><textarea name="address" required><?=$editData['address']??''?></textarea></div>
+
+                        <div>
+                            <label>Address:</label><textarea name="address" required><?=$editData['address']??''?></textarea>
+                        </div>
+
                         <button type="submit" class="btn btn-success">Save</button>
                         <button type="button" class="btn btn-secondary" onclick="toggleForm()">Cancel</button>
                     </form>
                 </div>
-                <table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Actions</th></tr></thead><tbody>
+                <table class="admin-table"><thead><tr><th>ID</th>
+                                                      <th>Name</th>
+                                                      <th>Email</th>
+                                                      <th>Phone</th>
+                                                      <th>Address</th>
+                                                      <th>Actions</th>
+                                                    </tr></thead><tbody>
+
                     <?php $r = $conn->query("SELECT * FROM {$cfg['table']}"); while($row = $r->fetch_assoc()): ?>
-                    <tr><td><?=$row['guardianID']?></td><td><?=$row['fullName']?></td><td><?=$row['email']?></td><td><?=$row['phoneNum']?></td><td><?=$row['address']?></td><td class="actions">
+                    <tr><td>
+                        <?=$row['guardianID']?></td><td>
+                            <?=$row['fullName']?></td><td
+                            ><?=$row['email']?></td><td>
+                                <?=$row['phoneNum']?></td><td>
+                                    <?=$row['address']?></td><td class="actions">
+
                         <a href="Admin.php?action=guardians&edit_id=<?=$row['guardianID']?>&edit_table=guardians" class="btn">Edit</a>
-                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_guardian"><input type="hidden" name="id" value="<?=$row['guardianID']?>"><button type="submit" class="btn btn-danger">Delete</button></form>
+
+                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')">
+
+                            <input type="hidden" name="action" value="delete_guardian">
+                            <input type="hidden" name="id" value="<?=$row['guardianID']?>">
+                            <button type="submit" class="btn btn-danger">Delete</button></form>
                     </td></tr>
                     <?php endwhile; ?>
                 </tbody></table>
 
             <?php elseif ($action === 'drivers'): $cfg = getTableConfig('drivers'); ?>
+
                 <h2>Manage Drivers</h2>
                 <div class="btn-group"><button class="btn" onclick="toggleForm()">+ Add Driver</button></div>
                 <div id="form-container" class="admin-form-container" style="display:none;">
@@ -192,8 +290,14 @@ if (isset($_GET['edit_id'], $_GET['edit_table'])) {
                         <input type="hidden" name="action" value="<?=isset($_GET['edit_id'])?'edit_driver':'add_driver'?>">
                         <?php if(isset($_GET['edit_id'])): ?><input type="hidden" name="driverID" value="<?=$_GET['edit_id']?>"><?php endif; ?>
                         <div class="form-row">
-                            <div><label>Full Name:</label><input type="text" name="fullName" required value="<?=$editData['fullName']??''?>"></div>
-                            <div><label>Email:</label><input type="email" name="email" required value="<?=$editData['email']??''?>"></div>
+                            <div>
+                                <label>Full Name:</label>
+                                <input type="text" name="fullName" required value="<?=$editData['fullName']??''?>">
+                            </div>
+                            <div>
+                                <label>Email:</label>
+                                <input type="email" name="email" required value="<?=$editData['email']??''?>">
+                            </div>
                         </div>
                         <div class="form-row">
                             <div><label>Phone:</label><input type="tel" name="phoneNum" required value="<?=$editData['phoneNum']??''?>"></div>
@@ -206,22 +310,37 @@ if (isset($_GET['edit_id'], $_GET['edit_table'])) {
                         <button type="submit" class="btn btn-success">Save</button>
                         <button type="button" class="btn btn-secondary" onclick="toggleForm()">Cancel</button>
                     </form>
+
                 </div>
-                <table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>License</th><th>Vehicle</th><th>Actions</th></tr></thead><tbody>
+                <table class="admin-table"><thead><tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>License</th>
+                    <th>Vehicle</th>
+                    <th>Actions</th>
+                </tr></thead><tbody>
                     <?php $r = $conn->query("SELECT * FROM {$cfg['table']}"); while($row = $r->fetch_assoc()): ?>
                     <tr><td><?=$row['driverID']?></td><td><?=$row['fullName']?></td><td><?=$row['email']?></td><td><?=$row['phoneNum']?></td><td><?=$row['LicenseNum']?></td><td><?=$row['vehicleType']?></td><td class="actions">
                         <a href="Admin.php?action=drivers&edit_id=<?=$row['driverID']?>&edit_table=drivers" class="btn">Edit</a>
-                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_driver"><input type="hidden" name="id" value="<?=$row['driverID']?>"><button type="submit" class="btn btn-danger">Delete</button></form>
+                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')">
+                            <input type="hidden" name="action" value="delete_driver">
+                            <input type="hidden" name="id" value="<?=$row['driverID']?>">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
                     </td></tr>
                     <?php endwhile; ?>
                 </tbody></table>
 
             <?php elseif ($action === 'routes'): $cfg = getTableConfig('routes'); ?>
                 <h2>Manage Routes</h2>
+
                 <div class="btn-group"><button class="btn" onclick="toggleForm()">+ Add Route</button></div>
                 <div id="form-container" class="admin-form-container" style="display:none;">
                     <form method="POST" class="admin-form">
                         <input type="hidden" name="action" value="<?=isset($_GET['edit_id'])?'edit_route':'add_route'?>">
+                        
                         <?php if(isset($_GET['edit_id'])): ?><input type="hidden" name="routeID" value="<?=$_GET['edit_id']?>"><?php endif; ?>
                         <div class="form-row">
                             <div><label>Route Name:</label><input type="text" name="routeName" required value="<?=$editData['routeName']??''?>"></div>
@@ -234,20 +353,39 @@ if (isset($_GET['edit_id'], $_GET['edit_table'])) {
                         <button type="submit" class="btn btn-success">Save</button>
                         <button type="button" class="btn btn-secondary" onclick="toggleForm()">Cancel</button>
                     </form>
+               
                 </div>
                 <table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Pickup</th><th>Dropoff</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-                    <?php $r = $conn->query("SELECT * FROM {$cfg['table']}"); while($row = $r->fetch_assoc()): ?>
-                    <tr><td><?=$row['routeID']?></td><td><?=$row['routeName']?></td><td><?=$row['pickup']?></td><td><?=$row['dropoff']?></td><td><span style="background:<?=$row['routeStatus']=='Active'?'#27ae60':'#e74c3c'?>;color:white;padding:5px 10px;border-radius:3px;"><?=$row['routeStatus']?></span></td><td class="actions">
+                    
+                <?php $r = $conn->query("SELECT * FROM {$cfg['table']}"); while($row = $r->fetch_assoc()): ?>
+                    <tr><td><?=$row['routeID']?></td><
+                    td><?=$row['routeName']?></td>
+                    <td><?=$row['pickup']?></td>
+                    <td><?=$row['dropoff']?></td>
+
+                    <td><span style="background:<?=$row['routeStatus']=='Active'?'#27ae60':'#e74c3c'?>;color:white;padding:5px 10px;border-radius:3px;"><?=$row['routeStatus']?></span></td><td class="actions">
                         <a href="Admin.php?action=routes&edit_id=<?=$row['routeID']?>&edit_table=routes" class="btn">Edit</a>
-                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_route"><input type="hidden" name="id" value="<?=$row['routeID']?>"><button type="submit" class="btn btn-danger">Delete</button></form>
+                        
+                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')">
+                            <input type="hidden" name="action" value="delete_route">
+                            <input type="hidden" name="id" value="<?=$row['routeID']?>">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
                     </td></tr>
                     <?php endwhile; ?>
                 </tbody></table>
 
             <?php elseif ($action === 'incidents'): ?>
+
                 <h2>Incidents Report</h2>
-                <table class="admin-table"><thead><tr><th>ID</th><th>Description</th><th>Date/Time</th><th>Emergency</th></tr></thead><tbody>
-                    <?php $r = $conn->query("SELECT * FROM tblincidents ORDER BY inDate DESC"); while($row = $r->fetch_assoc()): ?>
+                <table class="admin-table"><thead><tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Date/Time</th>
+                    <th>Emergency</th>
+                </tr></thead><tbody>
+                    
+                <?php $r = $conn->query("SELECT * FROM tblincidents ORDER BY inDate DESC"); while($row = $r->fetch_assoc()): ?>
                     <tr><td><?=$row['incidentID']?></td><td><?=$row['inDesc']?></td><td><?=$row['inDate']?></td><td><span style="background:<?=$row['emergAlert']=='Yes'?'#e74c3c':'#27ae60'?>;color:white;padding:5px 10px;border-radius:3px;"><?=$row['emergAlert']?></span></td></tr>
                     <?php endwhile; ?>
                 </tbody></table>
