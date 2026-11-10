@@ -1,5 +1,7 @@
 # Little Kids Smart Transportation System
 
+<img width="1907" height="907" alt="image" src="https://github.com/user-attachments/assets/981d062a-2e9f-4735-abfd-d4ff15cc624d" />
+
 
 The system is developed using **PHP** and provides a central platform for managing transportation-related information.
 
