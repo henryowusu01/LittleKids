@@ -10,10 +10,10 @@
     <div class="logo">Little Kids Transport</div>
 
     <nav>
-        <a href="Admin.php">Admin</a>
+        <a href="AdminLogin.php">Admin</a>
         <a href="LKLogin.php">Login</a>
         <a href="register.php">Register</a>
-        <a href="contact.php">Contact</a>
+        <a href="contact.php">Explore</a>
     </nav>
 </header>
 
@@ -30,8 +30,12 @@
             trusted by parents and schools.
         </p>
 
-        <a href="LKLogin.php" class="btn">
+        <a href="contact.php" class="btn">
             EXPLORE MORE
+        </a>
+
+         <a href="LKlogin.php" class="btn">
+            Sign In
         </a>
     </div>
 
