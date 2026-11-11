@@ -1,5 +1,7 @@
 # Little Kids Smart Transportation System
 
+<img width="1907" height="907" alt="image" src="https://github.com/user-attachments/assets/981d062a-2e9f-4735-abfd-d4ff15cc624d" />
+
 
 The system is developed using **PHP** and provides a central platform for managing transportation-related information.
 
@@ -23,6 +25,10 @@ The project focuses on making it easier to manage children, transportation infor
 - **MySQL** – Database management
 - **XAMPP** – Local development environment
 - **Git & GitHub** – Version control and project management
+
+  <img width="1902" height="902" alt="image" src="https://github.com/user-attachments/assets/7a924506-08cd-4a54-9017-5221428ecc99" />
+  <img width="1897" height="902" alt="image" src="https://github.com/user-attachments/assets/0b1e0996-7288-4e9c-b560-d04c4fa5220f" />
+
 
 ## Installation
 #1. Install XAMPP
@@ -76,3 +82,8 @@ Open your browser and go to:
 http://localhost/Little-Kids/
 
 The application should now load
+
+<img width="1907" height="892" alt="image" src="https://github.com/user-attachments/assets/56a84c03-c29e-4438-9870-a0474d011a19" />
+<img width="1902" height="806" alt="image" src="https://github.com/user-attachments/assets/3794923f-fdbe-48ce-81a5-b0e03f86d464" />
+
+
